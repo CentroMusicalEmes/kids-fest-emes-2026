@@ -109,6 +109,10 @@ Todo o conteúdo editável fica em **`config/event.ts`**:
 
 ## Ativar o PIX
 
+O QR Code oficial da escola (chave `emesfinanceiro@hotmail.com`, Centro Musical Emes) já está em `config/payment.ts`. Na área de ingressos, o visitante escolhe **quantos ingressos quiser** e o QR Code e o copia e cola são atualizados na hora com o total (R$ 20,00 × quantidade). Todos os outros campos do QR Code do banco ficam intactos.
+
+Para ativar no site, depois de um pagamento de teste que caiu na conta, mude `TEST_PAYMENT_CONFIRMED` para `true` em `config/payment.ts`. As variáveis abaixo são a alternativa para gerar o código a partir da chave.
+
 Enquanto a configuração estiver incompleta, a área de pagamento mostra **“Pagamento em configuração”**. Nenhum QR Code fictício é exibido. Em desenvolvimento, a mesma área lista o que ainda falta configurar.
 
 1. Defina as variáveis (em `.env.local` ou na Vercel):

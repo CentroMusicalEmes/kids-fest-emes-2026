@@ -112,7 +112,8 @@ export const faq: FaqItem[] = [
   },
   {
     question: "Como faço para comprar?",
-    answer: "Utilize o QR Code PIX ou o código copia e cola na área de ingressos.",
+    answer:
+      "Utilize o QR Code PIX ou o código copia e cola na área de ingressos. Escolha quantos ingressos quiser: o QR Code é atualizado com o valor total (R$ 20,00 por ingresso).",
   },
   {
     question: "Como confirmo o pagamento?",

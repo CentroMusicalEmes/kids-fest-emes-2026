@@ -14,8 +14,9 @@ import {
  * Há duas formas de configurar, nesta ordem de prioridade:
  *
  *  A) Payload oficial do banco (recomendado): o código "copia e cola" do QR
- *     Code que o banco da Emes gerou. O site usa o código como está e só
- *     acrescenta o valor de R$ 20,00 (campo 54 do padrão BR Code).
+ *     Code que o banco da Emes gerou. O site mantém todos os campos e só
+ *     insere o valor total (R$ 20,00 × quantidade escolhida) no campo 54
+ *     do padrão BR Code, recalculando o CRC.
  *
  *  B) Chave, nome e cidade: o site monta o payload a partir desses dados.
  *
@@ -40,6 +41,9 @@ export const OFFICIAL_PIX_PAYLOAD =
  */
 const TEST_PAYMENT_CONFIRMED = false;
 
+/** Limite do seletor de quantidade (só para evitar erros de digitação). */
+export const MAX_TICKETS_PER_PURCHASE = 50;
+
 export interface PixSettings {
   /** Payload oficial do banco. Quando preenchido, tem prioridade. */
   payload: string;
@@ -62,7 +66,17 @@ export const pixSettings: PixSettings = {
 };
 
 export type PixState =
-  | { status: "ready"; payload: string; merchantName: string; amountCents: number }
+  | {
+      status: "ready";
+      /**
+       * Payload base. O valor (preço × quantidade) é inserido no navegador
+       * com setPixPayloadAmount, conforme a quantidade escolhida.
+       */
+      payload: string;
+      merchantName: string;
+      /** Preço de um ingresso. */
+      amountCents: number;
+    }
   | { status: "pending"; issues: string[] };
 
 const NOT_VALIDATED =

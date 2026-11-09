@@ -188,6 +188,11 @@ describe("payload oficial do banco", () => {
     if (state.status === "ready") {
       expect(state.merchantName).toBe("Centro Musical Emes");
       expect(parseEmv(state.payload)["54"]).toBe("20.00");
+      // quantidade escolhida no site: 3 ingressos → R$ 60,00
+      const three = setPixPayloadAmount(state.payload, state.amountCents * 3);
+      expect(parseEmv(three)["54"]).toBe("60.00");
+      expect(parseEmv(three)["59"]).toBe("Centro Musical Emes");
+      expect(hasValidCrc(three)).toBe(true);
     }
   });
 

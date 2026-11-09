@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Check, Copy, Hourglass, QrCode, ShieldCheck } from "lucide-react";
-import { pixState } from "@/config/payment";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Copy, Hourglass, Minus, Plus, QrCode, ShieldCheck } from "lucide-react";
+import { MAX_TICKETS_PER_PURCHASE, pixState } from "@/config/payment";
+import { setPixPayloadAmount } from "@/lib/pix";
 import { trackMetaEvent, ticketEventParams } from "@/lib/analytics";
 import { formatBRL } from "@/lib/utils";
 import { QrCodeSvg } from "./QrCodeSvg";
@@ -68,13 +69,26 @@ function PendingState() {
 
 export function PixPayment() {
   const [copied, setCopied] = useState<"idle" | "ok" | "error">("idle");
+  const [quantity, setQuantity] = useState(1);
   const resetTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(resetTimer.current), []);
 
+  const basePayload = pixState.status === "ready" ? pixState.payload : "";
+  const unitCents = pixState.status === "ready" ? pixState.amountCents : 0;
+  const total = unitCents * quantity;
+  const payload = useMemo(
+    () => (basePayload ? setPixPayloadAmount(basePayload, total) : ""),
+    [basePayload, total],
+  );
+
   if (pixState.status !== "ready") return <PendingState />;
 
-  const { payload, merchantName, amountCents } = pixState;
+  const { merchantName, amountCents } = pixState;
+  const changeQuantity = (next: number) => {
+    setQuantity(Math.min(MAX_TICKETS_PER_PURCHASE, Math.max(1, next)));
+    setCopied("idle");
+  };
 
   const handleCopy = async () => {
     const ok = await copyText(payload);
@@ -93,13 +107,53 @@ export function PixPayment() {
         <div>
           <h3 className="font-display text-2xl font-semibold text-creme">Pagamento via PIX</h3>
           <p className="text-sm text-nevoa">
-            Valor: <strong className="text-ouro">{formatBRL(amountCents)}</strong> — 1 ingresso
+            <strong className="text-ouro">{formatBRL(amountCents)}</strong> por ingresso
           </p>
         </div>
       </div>
 
+        <div className="rounded-2xl border border-ouro/20 bg-ouro/5 p-4">
+          <div className="flex items-center justify-between gap-4">
+            <span id="qtd-label" className="text-sm font-medium text-creme">
+              Quantos ingressos?
+            </span>
+            <div role="group" aria-labelledby="qtd-label" className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => changeQuantity(quantity - 1)}
+                disabled={quantity <= 1}
+                aria-label="Diminuir quantidade"
+                className="inline-flex size-10 items-center justify-center rounded-full border border-ouro/40 text-ouro transition hover:bg-ouro/10 disabled:opacity-35"
+              >
+                <Minus aria-hidden className="size-4" />
+              </button>
+              <output
+                aria-live="polite"
+                className="w-8 text-center font-display text-2xl font-semibold text-creme tabular-nums"
+              >
+                {quantity}
+              </output>
+              <button
+                type="button"
+                onClick={() => changeQuantity(quantity + 1)}
+                disabled={quantity >= MAX_TICKETS_PER_PURCHASE}
+                aria-label="Aumentar quantidade"
+                className="inline-flex size-10 items-center justify-center rounded-full border border-ouro/40 text-ouro transition hover:bg-ouro/10 disabled:opacity-35"
+              >
+                <Plus aria-hidden className="size-4" />
+              </button>
+            </div>
+          </div>
+          <p className="mt-3 flex items-baseline justify-between border-t border-ouro/15 pt-3 text-sm text-nevoa">
+            Total do PIX
+            <strong className="font-display text-2xl text-ouro" aria-live="polite">
+              {formatBRL(total)}
+            </strong>
+          </p>
+        </div>
+
       <div className="mx-auto w-full max-w-[260px] rounded-2xl bg-white p-3 shadow-[0_0_60px_-10px_rgb(248_217_139/0.5)]">
-        <QrCodeSvg value={payload} label={`QR Code PIX de ${formatBRL(amountCents)} para ${merchantName}`} />
+        <QrCodeSvg value={payload} label={`QR Code PIX de ${formatBRL(total)} (${quantity} ${quantity > 1 ? "ingressos" : "ingresso"}) para ${merchantName}`} />
       </div>
 
       <div>
@@ -142,10 +196,11 @@ export function PixPayment() {
       <ol className="space-y-3 text-sm text-nevoa">
         {[
           "Abra o aplicativo do seu banco e escolha pagar com PIX.",
-          "Escaneie o QR Code ou cole o código copia e cola.",
+          "Escolha a quantidade acima e escaneie o QR Code ou cole o código copia e cola.",
           <>
-            Confira o valor de <strong className="text-creme">{formatBRL(amountCents)}</strong> e o
-            recebedor <strong className="text-creme">{merchantName}</strong> antes de confirmar.
+            Confira o valor de <strong className="text-creme">{formatBRL(total)}</strong>
+            {quantity > 1 ? ` (${quantity} ingressos)` : " (1 ingresso)"} e o recebedor{" "}
+            <strong className="text-creme">{merchantName}</strong> antes de confirmar.
           </>,
           "Guarde o comprovante e envie pelo WhatsApp para a equipe da Emes.",
         ].map((step, i) => (
