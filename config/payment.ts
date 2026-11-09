@@ -39,7 +39,8 @@ export const OFFICIAL_PIX_PAYLOAD =
  * exibido no próprio site e confirmar o crédito na conta da Emes.
  * A variável NEXT_PUBLIC_PIX_VALIDATED=true também ativa.
  */
-const TEST_PAYMENT_CONFIRMED = false;
+// Pagamento de teste confirmado pela Emes em 09/11/2026 (valor caiu na conta).
+const TEST_PAYMENT_CONFIRMED = true;
 
 /** Limite do seletor de quantidade (só para evitar erros de digitação). */
 export const MAX_TICKETS_PER_PURCHASE = 50;

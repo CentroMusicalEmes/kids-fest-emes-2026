@@ -196,7 +196,11 @@ describe("payload oficial do banco", () => {
     }
   });
 
-  it("o site fica em configuração até o pagamento de teste", () => {
-    expect(pixState.status).toBe("pending");
+  it("o site exibe o PIX oficial após o pagamento de teste", () => {
+    expect(pixState.status).toBe("ready");
+    if (pixState.status === "ready") {
+      expect(pixState.merchantName).toBe("Centro Musical Emes");
+      expect(parseEmv(parseEmv(pixState.payload)["26"])["01"]).toBe("emesfinanceiro@hotmail.com");
+    }
   });
 });
