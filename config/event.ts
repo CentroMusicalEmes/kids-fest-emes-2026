@@ -222,3 +222,18 @@ export interface Sponsor {
 
 /** Cadastre os patrocinadores confirmados. */
 export const sponsors: Sponsor[] = [];
+
+/* -------------------------------------------------------------------------- */
+/* Trilha sonora                                                              */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Música "Kids Fest", criada pela Emes (maestrokielsaraiva) no Suno em
+ * 09/11/2026. Navegadores só permitem áudio após uma interação: com
+ * `autoStartOnFirstInteraction`, a música começa no primeiro toque/clique.
+ */
+export const music = {
+  src: "/audio/kids-fest-emes-2026.mp3",
+  title: "Kids Fest",
+  autoStartOnFirstInteraction: true,
+};

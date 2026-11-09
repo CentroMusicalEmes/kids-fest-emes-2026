@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/Header";
 import { Support } from "@/components/layout/Support";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWhatsApp } from "@/components/layout/FloatingWhatsApp";
+import { MusicPlayer } from "@/components/layout/MusicPlayer";
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
       </main>
       <Footer />
       <FloatingWhatsApp />
+      <MusicPlayer />
     </>
   );
 }

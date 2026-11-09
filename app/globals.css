@@ -395,6 +395,21 @@
       no-repeat;
 }
 
+/* Barras do botão de música */
+.music-bar {
+  height: 40%;
+  animation: music-bar 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes music-bar {
+  from {
+    height: 25%;
+  }
+  to {
+    height: 100%;
+  }
+}
+
 /* Acordeão: anima a altura sem medir em JS */
 .accordion-panel {
   display: grid;
@@ -427,6 +442,7 @@
   .sparkle,
   .scroll-cue,
   .shimmer-text,
+  .music-bar,
   .cta-primary,
   .cta-primary::after {
     animation: none !important;
