@@ -40,26 +40,35 @@ export function Hero() {
         <Sparkle className="top-[18%] right-[6%]" size={14} delay="1.6s" />
         <Sparkle className="bottom-[22%] left-[4%]" size={12} delay="2.4s" />
 
-        <p className="rise-in eyebrow mb-7 inline-flex items-center gap-3" style={d(0.2)}>
-          <span aria-hidden className="h-px w-10 bg-ouro/60" />
-          {event.name}
-          <span aria-hidden className="h-px w-10 bg-ouro/60" />
-        </p>
+        {/* Nome do evento em destaque, como o letreiro de uma estreia */}
+        <h1 id="hero-title" className="rise-in relative" style={d(0.15)}>
+          <span className="sr-only">{event.name}</span>
+          <span aria-hidden className="block">
+            <span
+              className="absolute inset-x-0 top-1/2 -z-10 mx-auto h-2/3 max-w-3xl -translate-y-1/2 rounded-full bg-ouro/25 blur-3xl"
+            />
+            <span className="text-gold shimmer-text kids-fest-title block font-display text-[4.6rem] leading-[0.9] font-bold tracking-[-0.02em] uppercase sm:text-[7.5rem] md:text-[9rem] lg:text-[11rem]">
+              Kids Fest
+            </span>
+            <span className="mt-3 flex items-center justify-center gap-3 text-sm font-semibold tracking-[0.5em] text-ouro-claro uppercase sm:mt-5 sm:gap-5 sm:text-lg">
+              <span className="h-px w-8 bg-gradient-to-r from-transparent to-ouro sm:w-16" />
+              Emes <span className="text-rosa">✦</span> 2026
+              <span className="h-px w-8 bg-gradient-to-l from-transparent to-ouro sm:w-16" />
+            </span>
+          </span>
+        </h1>
 
-        <h1
-          id="hero-title"
-          className="font-display text-[2.55rem] leading-[1.04] font-semibold tracking-tight sm:text-6xl md:text-7xl lg:text-[5.4rem]"
-        >
-          <span className="rise-in block text-creme" style={d(0.45)}>
+        <p className="mt-9 font-display text-[1.75rem] leading-[1.12] font-semibold tracking-tight sm:mt-12 sm:text-4xl md:text-5xl">
+          <span className="rise-in block text-creme" style={d(0.55)}>
             Pequenos artistas.
           </span>
-          <span className="rise-in text-gold shimmer-text block px-[0.08em] italic" style={d(0.75)}>
+          <span className="rise-in text-gold block px-[0.08em] italic" style={d(0.8)}>
             Grandes conquistas.
           </span>
           <span className="rise-in text-aurora block" style={d(1.05)}>
             Memórias para toda a vida.
           </span>
-        </h1>
+        </p>
 
         <p
           className="rise-in mx-auto mt-8 max-w-2xl text-base leading-relaxed text-nevoa sm:text-lg"

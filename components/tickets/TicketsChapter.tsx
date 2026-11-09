@@ -1,8 +1,7 @@
 import { Receipt } from "lucide-react";
-import { whatsappLinks } from "@/config/integrations";
 import { Countdown } from "@/components/countdown/Countdown";
 import { PixPayment } from "@/components/payment/PixPayment";
-import { WhatsAppAction } from "@/components/payment/WhatsAppAction";
+import { TicketRequestForm } from "@/components/payment/TicketRequestForm";
 import { TrackOnView } from "@/components/analytics/TrackOnView";
 import { Reveal } from "@/components/ui/Reveal";
 import { GoldDivider, SectionHeading } from "@/components/ui/SectionHeading";
@@ -63,13 +62,9 @@ export function TicketsChapter() {
             </h3>
             <p className="mx-auto mt-3 max-w-xl text-lg text-nevoa">
               Envie seu comprovante para a equipe da Emes e aguarde a confirmação do seu ingresso.
+              Preencha seus dados para receber o ingresso pela <strong className="text-creme">Sympla</strong>.
             </p>
-            <WhatsAppAction
-              href={whatsappLinks.receipt}
-              label="Enviar comprovante pelo WhatsApp"
-              context="receipt"
-              className="mt-8"
-            />
+            <TicketRequestForm />
           </div>
         </Reveal>
 

@@ -31,6 +31,39 @@ export const whatsappMessages = {
   support: `Olá! Tenho uma dúvida sobre o ${event.name}.`,
 };
 
+export interface TicketRequest {
+  fullName: string;
+  email: string;
+  /** Aluno(a) da Emes que o convidado vai assistir. */
+  studentName: string;
+  quantity: number;
+}
+
+/**
+ * Mensagem enviada junto com o comprovante: traz os dados que a equipe usa
+ * para emitir o ingresso na Sympla.
+ */
+export function buildTicketRequestMessage(
+  data: TicketRequest,
+  unitPriceCents: number = event.ticket.priceCents,
+): string {
+  const total = ((unitPriceCents * data.quantity) / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+  return [
+    whatsappMessages.receipt,
+    "",
+    `*Nome completo:* ${data.fullName.trim().replace(/\s+/g, " ")}`,
+    `*E-mail para receber o ingresso (Sympla):* ${data.email.trim().toLowerCase()}`,
+    `*Nome do aluno(a):* ${data.studentName.trim().replace(/\s+/g, " ")}`,
+    `*Quantidade de ingressos:* ${data.quantity}`,
+    `*Valor pago:* ${total.replace(/\u00a0/g, " ")}`,
+    "",
+    "Segue o comprovante em anexo.",
+  ].join("\n");
+}
+
 export const whatsappLinks = {
   receipt: resolveWhatsAppUrl(whatsappConfig, whatsappMessages.receipt),
   support: resolveWhatsAppUrl(whatsappConfig, whatsappMessages.support),

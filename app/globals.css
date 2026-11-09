@@ -119,6 +119,13 @@
   color: var(--color-ouro);
 }
 
+/* Letreiro KIDS FEST: brilho dourado com profundidade */
+.kids-fest-title {
+  filter: drop-shadow(0 0 28px rgb(248 217 139 / 0.35))
+    drop-shadow(0 6px 0 rgb(48 20 92 / 0.9));
+  padding-inline: 0.04em;
+}
+
 .shimmer-text {
   animation: shimmer 6s linear infinite;
 }

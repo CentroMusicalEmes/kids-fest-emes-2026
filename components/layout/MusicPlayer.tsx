@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { VolumeX } from "lucide-react";
 import { music } from "@/config/event";
 import { cn } from "@/lib/utils";
 
@@ -136,7 +136,7 @@ export function MusicPlayer() {
         aria-pressed={playing}
         aria-label={playing ? `Pausar a música “${music.title}”` : `Tocar a música “${music.title}”`}
         className={cn(
-          "fixed bottom-4 left-4 z-40 inline-flex h-12 items-center gap-2.5 rounded-full border px-4 text-xs font-semibold tracking-[0.14em] uppercase backdrop-blur-xl transition sm:bottom-6 sm:left-6",
+          "fixed bottom-4 left-4 z-40 inline-flex h-12 w-12 items-center justify-center gap-2.5 rounded-full border text-xs sm:w-auto sm:px-4 font-semibold tracking-[0.14em] uppercase backdrop-blur-xl transition sm:bottom-6 sm:left-6",
           playing
             ? "border-ouro/50 bg-noite/80 text-ouro shadow-[0_0_30px_-6px_rgb(248_217_139/0.6)]"
             : "border-ouro/30 bg-noite/70 text-ouro-claro hover:border-ouro/60",
@@ -156,11 +156,6 @@ export function MusicPlayer() {
           <VolumeX aria-hidden className="size-4" />
         )}
         <span className="hidden sm:inline">{playing ? "Trilha tocando" : "Ouvir a trilha"}</span>
-        {playing ? (
-          <Volume2 aria-hidden className="size-4 sm:hidden" />
-        ) : (
-          <span className="sm:hidden">Música</span>
-        )}
       </button>
     </>
   );
