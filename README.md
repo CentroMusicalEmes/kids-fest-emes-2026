@@ -207,6 +207,10 @@ O DNS fica na Hostinger: os registros `@` (A 216.198.79.1), `www` e `kidsfest` (
 
 Outras hospedagens compatíveis com Next.js também funcionam com `npm run build` e `npm start`.
 
+## Planilha de controle de vendas
+
+`docs/controle-vendas-kids-fest-2026.xlsx` lista os pedidos em ordem e tem um resumo automático (conferidos, pendentes, emitidos na Sympla). Para que cada envio do formulário do site entre sozinho na planilha, siga `docs/planilha-google.md` (Google Planilhas + Apps Script, variáveis `NEXT_PUBLIC_SALES_SHEET_URL` e `NEXT_PUBLIC_SALES_SHEET_TOKEN`).
+
 ## Checklist antes de divulgar
 
 - [ ] PIX de teste feito e `NEXT_PUBLIC_PIX_VALIDATED=true`

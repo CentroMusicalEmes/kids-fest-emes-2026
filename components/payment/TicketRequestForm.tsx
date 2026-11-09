@@ -4,7 +4,7 @@ import { useId, useRef, useState } from "react";
 import { Phone, Send } from "lucide-react";
 import { event } from "@/config/event";
 import { MAX_TICKETS_PER_PURCHASE } from "@/config/payment";
-import { buildTicketRequestMessage, whatsappConfig } from "@/config/integrations";
+import { buildTicketRequestMessage, salesSheetConfig, whatsappConfig } from "@/config/integrations";
 import { trackMetaEvent } from "@/lib/analytics";
 import { formatBRL } from "@/lib/utils";
 import { isValidEmail, isValidFullName } from "@/lib/validation";
@@ -16,6 +16,30 @@ type Errors = Partial<Record<Field, string>>;
 
 const inputClass =
   "w-full rounded-xl border bg-black/25 px-4 py-3.5 text-base text-creme placeholder:text-nevoa-2/70 transition focus:border-ouro/70 focus:bg-black/35 focus:outline-none aria-[invalid=true]:border-rosa/70";
+
+/**
+ * Registra o pedido na planilha de controle (se configurada). Não bloqueia o
+ * envio pelo WhatsApp: se a planilha falhar, a equipe ainda recebe a mensagem.
+ */
+function recordOnSalesSheet(data: {
+  fullName: string;
+  email: string;
+  studentName: string;
+  quantity: number;
+}) {
+  if (!salesSheetConfig.url) return;
+  try {
+    void fetch(salesSheetConfig.url, {
+      method: "POST",
+      mode: "no-cors",
+      keepalive: true,
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ ...data, token: salesSheetConfig.token }),
+    }).catch(() => undefined);
+  } catch {
+    /* ignora: o WhatsApp continua sendo o canal principal */
+  }
+}
 
 /**
  * Dados do convidado para a emissão do ingresso na Sympla. Nada é salvo no
@@ -62,6 +86,7 @@ export function TicketRequestForm() {
       buildTicketRequestMessage({ fullName, email, studentName, quantity }),
     );
     if (!url) return;
+    recordOnSalesSheet({ fullName, email, studentName, quantity });
     trackMetaEvent("Contact", { content_name: "receipt" }, { once: true });
     const win = window.open(url, "_blank");
     if (win) win.opener = null;
@@ -192,8 +217,8 @@ export function TicketRequestForm() {
             className="mt-1 size-5 shrink-0 accent-[#2fc48a]"
           />
           <span>
-            Autorizo a Emes a usar meu nome, e-mail e o nome do aluno(a) apenas para emitir e
-            enviar meu ingresso pela Sympla.
+            Autorizo a Emes a usar meu nome, e-mail e o nome do aluno(a) apenas para controlar a
+            lista de convidados e emitir e enviar meu ingresso pela Sympla.
           </span>
         </label>
         {errorText("consent")}

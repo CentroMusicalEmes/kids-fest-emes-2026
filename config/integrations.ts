@@ -80,6 +80,20 @@ export const metaPixelConfig = {
   requireConsent: process.env.NEXT_PUBLIC_META_PIXEL_REQUIRE_CONSENT !== "false",
 };
 
+/**
+ * Planilha de controle de vendas (Google Planilhas + Apps Script).
+ * Quando configurada, cada envio do formulário vira uma linha na aba Vendas,
+ * na ordem de chegada. Passo a passo em docs/planilha-google.md.
+ *
+ * O token apenas filtra envios aleatórios: ele fica visível no navegador,
+ * então não é uma senha.
+ */
+const rawSalesUrl = process.env.NEXT_PUBLIC_SALES_SHEET_URL ?? "";
+export const salesSheetConfig = {
+  url: /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(rawSalesUrl) ? rawSalesUrl : "",
+  token: process.env.NEXT_PUBLIC_SALES_SHEET_TOKEN ?? "",
+};
+
 export const mapsLinks = {
   directions: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.venue.mapsQuery)}`,
   embed: `https://www.google.com/maps?q=${encodeURIComponent(event.venue.mapsQuery)}&output=embed`,
