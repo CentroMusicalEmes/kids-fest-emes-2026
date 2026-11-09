@@ -73,7 +73,10 @@ function doPost(e) {
     }
     // L: link do comprovante
     ensureHeader_(sheet, RECEIPT_COL, 'Comprovante', 140);
-    sheet.getRange(row, RECEIPT_COL).setFormula('=HYPERLINK("' + file.getUrl() + '","Ver comprovante")');
+    // Link no próprio texto (funciona em planilhas de qualquer idioma)
+    sheet.getRange(row, RECEIPT_COL).setRichTextValue(
+      SpreadsheetApp.newRichTextValue().setText('Ver comprovante').setLinkUrl(file.getUrl()).build()
+    );
 
     return json_({ ok: true, row: row, receiptUrl: file.getUrl() });
   } catch (err) {
