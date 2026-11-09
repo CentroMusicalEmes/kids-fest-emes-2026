@@ -9,7 +9,12 @@ import {
   sanitizePixText,
   validatePixInput,
 } from "@/lib/pix";
-import { resolvePixState } from "@/config/payment";
+import { OFFICIAL_PIX_PAYLOAD, pixState, resolvePixState } from "@/config/payment";
+import {
+  parseEmvEntries,
+  setPixPayloadAmount,
+  validateProvidedPixPayload,
+} from "@/lib/pix";
 
 // Dados de TESTE apenas (CPF gerado para testes, válido pelos dígitos verificadores).
 const TEST_CPF = "529.982.247-25";
@@ -109,6 +114,7 @@ describe("buildPixPayload", () => {
 
 describe("resolvePixState", () => {
   const base = {
+    payload: "",
     key: TEST_EVP,
     merchantName: "Fulano de Tal",
     merchantCity: "Belo Horizonte",
@@ -130,5 +136,58 @@ describe("resolvePixState", () => {
     const state = resolvePixState(base);
     expect(state.status).toBe("ready");
     if (state.status === "ready") expect(hasValidCrc(state.payload)).toBe(true);
+  });
+});
+
+describe("payload oficial do banco", () => {
+  const BCB_EXAMPLE =
+    "00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-4266554400005204000053039865802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D";
+
+  it("o QR Code oficial da Emes é íntegro e é PIX", () => {
+    expect(validateProvidedPixPayload(OFFICIAL_PIX_PAYLOAD)).toEqual([]);
+  });
+
+  it("acrescenta R$ 20,00 sem alterar os demais campos", () => {
+    const withAmount = setPixPayloadAmount(OFFICIAL_PIX_PAYLOAD, 2000);
+    expect(hasValidCrc(withAmount)).toBe(true);
+    const before = parseEmvEntries(OFFICIAL_PIX_PAYLOAD).filter(([id]) => id !== "63");
+    const after = parseEmvEntries(withAmount).filter(([id]) => id !== "63");
+    expect(after.filter(([id]) => id !== "54")).toEqual(before);
+    expect(Object.fromEntries(after)["54"]).toBe("20.00");
+    // campo 54 fica entre 53 (moeda) e 58 (país)
+    expect(after.map(([id]) => id)).toEqual(["00", "26", "52", "53", "54", "58", "59", "60", "62"]);
+  });
+
+  it("substitui um valor existente", () => {
+    const once = setPixPayloadAmount(BCB_EXAMPLE, 1000);
+    const twice = setPixPayloadAmount(once, 2000);
+    expect(parseEmv(twice)["54"]).toBe("20.00");
+    expect(hasValidCrc(twice)).toBe(true);
+  });
+
+  it("recusa payload adulterado", () => {
+    const tampered = OFFICIAL_PIX_PAYLOAD.replace("Centro", "Contra");
+    expect(validateProvidedPixPayload(tampered)).toContain("O CRC do payload oficial não confere.");
+  });
+
+  it("usa o payload oficial com prioridade quando validado", () => {
+    const state = resolvePixState({
+      payload: OFFICIAL_PIX_PAYLOAD,
+      key: "",
+      merchantName: "",
+      merchantCity: "",
+      txid: "***",
+      amountCents: 2000,
+      validated: true,
+    });
+    expect(state.status).toBe("ready");
+    if (state.status === "ready") {
+      expect(state.merchantName).toBe("Centro Musical Emes");
+      expect(parseEmv(state.payload)["54"]).toBe("20.00");
+    }
+  });
+
+  it("o site fica em configuração até o pagamento de teste", () => {
+    expect(pixState.status).toBe("pending");
   });
 });

@@ -206,3 +206,77 @@ export function hasValidCrc(payload: string): boolean {
   const body = payload.slice(0, -4);
   return body.endsWith("6304") && crc16(body) === payload.slice(-4);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Payload oficial fornecido pelo banco                                       */
+/* -------------------------------------------------------------------------- */
+
+/** Lê o payload em pares [ID, valor] preservando a ordem original. */
+export function parseEmvEntries(payload: string): Array<[string, string]> {
+  const entries: Array<[string, string]> = [];
+  let i = 0;
+  while (i < payload.length) {
+    const id = payload.slice(i, i + 2);
+    const lengthText = payload.slice(i + 2, i + 4);
+    if (!/^\d{2}$/.test(id) || !/^\d{2}$/.test(lengthText)) {
+      throw new Error(`Payload malformado na posição ${i}.`);
+    }
+    const length = Number(lengthText);
+    const value = payload.slice(i + 4, i + 4 + length);
+    if (value.length !== length) throw new Error("Payload truncado.");
+    entries.push([id, value]);
+    i += 4 + length;
+  }
+  return entries;
+}
+
+/**
+ * Confere um payload PIX gerado pelo banco (QR Code oficial do recebedor).
+ * Não reinterpreta a chave: apenas garante que o código é íntegro e é PIX.
+ */
+export function validateProvidedPixPayload(payload: string): string[] {
+  const issues: string[] = [];
+  const text = payload.trim();
+  if (!text) return ["Payload PIX oficial não informado."];
+  if (!hasValidCrc(text)) issues.push("O CRC do payload oficial não confere.");
+  let fields: Record<string, string>;
+  try {
+    fields = Object.fromEntries(parseEmvEntries(text));
+  } catch {
+    return [...issues, "Payload oficial malformado."];
+  }
+  let account: Record<string, string> = {};
+  try {
+    account = Object.fromEntries(parseEmvEntries(fields["26"] ?? ""));
+  } catch {
+    issues.push("Campo 26 (conta PIX) malformado.");
+  }
+  if ((account["00"] ?? "").toLowerCase() !== GUI) issues.push("O payload não é um PIX (br.gov.bcb.pix).");
+  if (!account["01"] && !account["25"]) issues.push("O payload não contém chave PIX.");
+  if (fields["53"] !== "986") issues.push("A moeda do payload não é o real (986).");
+  if (fields["58"] !== "BR") issues.push("O país do payload não é BR.");
+  if (!fields["59"]) issues.push("O payload não contém o nome do recebedor.");
+  if (!fields["60"]) issues.push("O payload não contém a cidade do recebedor.");
+  return issues;
+}
+
+/**
+ * Acrescenta (ou substitui) o valor no payload oficial, no campo 54 previsto
+ * pelo padrão, e recalcula o CRC. Todos os outros campos ficam intactos.
+ */
+export function setPixPayloadAmount(payload: string, amountCents: number): string {
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    throw new PixConfigError(["Valor inválido."]);
+  }
+  const entries = parseEmvEntries(payload.trim()).filter(
+    ([id]) => id !== "54" && id !== "63",
+  );
+  entries.push(["54", (amountCents / 100).toFixed(2)]);
+  entries.sort(([a], [b]) => Number(a) - Number(b));
+  const body = entries.map(([id, value]) => field(id, value)).join("") + "6304";
+  return body + crc16(body);
+}
+
+export function getPixMerchantName(payload: string): string {
+  return Object.fromEntries(parseEmvEntries(payload.trim()))["59"] ?? "";
+}
