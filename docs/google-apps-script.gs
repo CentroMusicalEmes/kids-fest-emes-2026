@@ -10,6 +10,7 @@ const FIRST_ROW = 5; // primeira linha de dados (a linha 4 é o cabeçalho)
 const TOKEN = 'TROQUE-ESTE-TOKEN'; // mesmo valor de NEXT_PUBLIC_SALES_SHEET_TOKEN no site
 const SYMPLA_COL = 11; // coluna K: código(s) dos ingressos emitidos na Sympla
 const RECEIPT_COL = 12; // coluna L: link do comprovante no Google Drive
+const GUESTS_COL = 13; // coluna M: nome de cada convidado (um por ingresso)
 const RECEIPTS_FOLDER = 'Kids Fest 2026 - Comprovantes';
 const RECEIPT_MAX_BYTES = 10 * 1024 * 1024;
 const RECEIPT_TYPES = {
@@ -28,6 +29,10 @@ function doPost(e) {
     const email = clean_(data.email, 254).toLowerCase();
     const studentName = clean_(data.studentName, 120);
     const quantity = Math.max(0, Math.min(50, parseInt(data.quantity, 10) || 0));
+    const guests = (Array.isArray(data.guests) ? data.guests : [])
+      .slice(0, quantity)
+      .map(function (g) { return clean_(g, 120).replace(/^'/, ''); })
+      .filter(function (g) { return g; });
     if (!fullName || email.indexOf('@') < 1 || !studentName || !quantity) {
       return json_({ ok: false, error: 'dados' });
     }
@@ -59,6 +64,13 @@ function doPost(e) {
     sheet.getRange(row, 2, 1, 5).setValues([[new Date(), fullName, email, studentName, quantity]]);
     // H: pagamento conferido? · I: ingresso emitido na Sympla?
     sheet.getRange(row, 8, 1, 2).setValues([['Não', 'Não']]);
+    // M: convidados, um por linha
+    ensureHeader_(sheet, GUESTS_COL, 'Convidados', 260);
+    if (guests.length) {
+      sheet.getRange(row, GUESTS_COL)
+        .setValue(guests.map(function (g, i) { return (i + 1) + '. ' + g; }).join('\n'))
+        .setWrap(true);
+    }
     // L: link do comprovante
     ensureHeader_(sheet, RECEIPT_COL, 'Comprovante', 140);
     sheet.getRange(row, RECEIPT_COL).setFormula('=HYPERLINK("' + file.getUrl() + '","Ver comprovante")');
@@ -272,7 +284,8 @@ function ativarSincronizacaoAutomatica() {
 /** Rode uma vez pelo editor para testar: cria uma linha de teste (apague depois). */
 function testarGravacao() {
   const res = doPost({ postData: { contents: JSON.stringify({
-    token: TOKEN, fullName: 'Teste da Silva', email: 'teste@exemplo.com', studentName: 'Aluno Teste', quantity: 1,
+    token: TOKEN, fullName: 'Teste da Silva', email: 'teste@exemplo.com', studentName: 'Aluno Teste', quantity: 2,
+    guests: ['Teste da Silva', 'Convidado Teste'],
     receipt: { name: 'teste.png', type: 'image/png',
       base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' },
   }) } });

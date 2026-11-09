@@ -17,6 +17,17 @@ describe("buildTicketRequestMessage", () => {
     expect(msg).toContain("*Quantidade de ingressos:* 3");
     expect(msg).toContain("*Valor pago:* R$ 60,00");
   });
+
+  it("lista os convidados, um por ingresso", () => {
+    const msg = buildTicketRequestMessage({
+      fullName: "Maria da Silva",
+      email: "maria@exemplo.com",
+      studentName: "Pedro Silva",
+      quantity: 3,
+      guests: ["Maria da Silva", " João  Silva ", "Ana Silva"],
+    });
+    expect(msg).toContain("*Convidados:*\n1. Maria da Silva\n2. João Silva\n3. Ana Silva");
+  });
 });
 
 describe("validação do formulário", () => {

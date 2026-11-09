@@ -45,6 +45,10 @@ O formulário do site exige o comprovante do PIX (foto, print ou PDF, até 8 MB)
 
 Depois de colar o código, rode `prepararPastaDeComprovantes` uma vez pelo editor, para autorizar o acesso ao Drive, e publique uma **nova versão**. Para a equipe abrir os comprovantes, compartilhe a pasta com quem confere os pagamentos.
 
+## Nomes dos convidados
+
+O formulário pede o nome completo de **cada convidado** (um campo por ingresso; o primeiro vem preenchido com o comprador). O script grava a lista na coluna **M (Convidados)**, um nome por linha, para a equipe usar ao emitir os ingressos na Sympla.
+
 ## 5. Integração com a Sympla (ingressos emitidos entram sozinhos)
 
 A cada 15 minutos o script consulta os participantes do evento na Sympla. Para cada pedido da aba **Vendas** com o mesmo e-mail, ele marca **Ingresso emitido na Sympla? = Sim** e anota o(s) código(s) na coluna **K**. Se a pessoa pediu 3 e só 1 foi emitido, a coluna K mostra "(1 de 3)" e o status continua "Não".

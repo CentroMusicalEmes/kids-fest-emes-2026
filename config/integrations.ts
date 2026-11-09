@@ -36,6 +36,8 @@ export interface TicketRequest {
   email: string;
   /** Aluno(a) da Emes que o convidado vai assistir. */
   studentName: string;
+  /** Nome completo de cada pessoa que vai assistir (um por ingresso). */
+  guests?: string[];
   quantity: number;
 }
 
@@ -58,6 +60,12 @@ export function buildTicketRequestMessage(
     `*E-mail para receber o ingresso (Sympla):* ${data.email.trim().toLowerCase()}`,
     `*Nome do aluno(a):* ${data.studentName.trim().replace(/\s+/g, " ")}`,
     `*Quantidade de ingressos:* ${data.quantity}`,
+    ...(data.guests && data.guests.length
+      ? [
+          "*Convidados:*",
+          ...data.guests.map((g, i) => `${i + 1}. ${g.trim().replace(/\s+/g, " ")}`),
+        ]
+      : []),
     `*Valor pago:* ${total.replace(/\u00a0/g, " ")}`,
     "",
     "Segue o comprovante em anexo.",

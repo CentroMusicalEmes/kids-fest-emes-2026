@@ -12,7 +12,7 @@ import { isValidEmail, isValidFullName } from "@/lib/validation";
 import { resolveWhatsAppUrl } from "@/lib/whatsapp";
 import { WhatsAppIcon } from "@/components/ui/WhatsAppIcon";
 
-type Field = "fullName" | "email" | "studentName" | "quantity" | "receipt" | "consent";
+type Field = "fullName" | "email" | "studentName" | "quantity" | "receipt" | "consent" | `guest-${number}`;
 type Errors = Partial<Record<Field, string>>;
 type Status = "idle" | "sending" | "done" | "error";
 
@@ -21,6 +21,7 @@ interface RequestData {
   email: string;
   studentName: string;
   quantity: number;
+  guests: string[];
 }
 
 const inputClass =
@@ -60,6 +61,17 @@ export function TicketRequestForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [quantity, setQuantity] = useState(1);
+  const [guests, setGuests] = useState<string[]>([""]);
+
+  const changeQuantity = (value: number) => {
+    setQuantity(value);
+    if (value >= 1 && value <= MAX_TICKETS_PER_PURCHASE) {
+      setGuests((prev) => Array.from({ length: value }, (_, i) => prev[i] ?? ""));
+    }
+  };
+
+  const setGuest = (index: number, value: string) =>
+    setGuests((prev) => prev.map((g, i) => (i === index ? value : g)));
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [lastData, setLastData] = useState<RequestData | null>(null);
@@ -76,7 +88,7 @@ export function TicketRequestForm() {
     trackMetaEvent("Contact", { content_name: "receipt" }, { once: true });
     const win = window.open(url, "_blank");
     if (win) win.opener = null;
-    else window.location.href = url;
+    else window.location.assign(url);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -88,6 +100,7 @@ export function TicketRequestForm() {
       email: String(form.get("email") ?? ""),
       studentName: String(form.get("studentName") ?? ""),
       quantity,
+      guests: guests.slice(0, quantity).map((g) => g.trim().replace(/\s+/g, " ")),
     };
     const consent = form.get("consent") === "on";
 
@@ -97,6 +110,10 @@ export function TicketRequestForm() {
     if (!isValidFullName(data.studentName)) next.studentName = "Informe o nome e sobrenome do aluno(a).";
     if (!Number.isInteger(quantity) || quantity < 1 || quantity > MAX_TICKETS_PER_PURCHASE) {
       next.quantity = `Escolha entre 1 e ${MAX_TICKETS_PER_PURCHASE} ingressos.`;
+    } else {
+      data.guests.forEach((g, i) => {
+        if (!isValidFullName(g)) next[`guest-${i}`] = `Informe nome e sobrenome do convidado ${i + 1}.`;
+      });
     }
     if (sheetEnabled) {
       const receiptError = validateReceiptFile(file);
@@ -177,6 +194,8 @@ export function TicketRequestForm() {
           onClick={() => {
             setStatus("idle");
             setFile(null);
+            setQuantity(1);
+            setGuests([""]);
             formRef.current?.reset();
           }}
           className="btn-ghost mt-6"
@@ -274,7 +293,7 @@ export function TicketRequestForm() {
             min={1}
             max={MAX_TICKETS_PER_PURCHASE}
             value={quantity}
-            onChange={(e) => setQuantity(Math.trunc(Number(e.target.value)) || 0)}
+            onChange={(e) => changeQuantity(Math.trunc(Number(e.target.value)) || 0)}
             aria-invalid={!!errors.quantity}
             aria-describedby={describe("quantity", `${id}-qtd-total`)}
             className={inputClass.replace("w-full", "w-24") + " shrink-0 border-white/15 text-center"}
@@ -288,6 +307,57 @@ export function TicketRequestForm() {
         </div>
         {errorText("quantity")}
       </div>
+
+      {quantity >= 1 && quantity <= MAX_TICKETS_PER_PURCHASE && (
+        <fieldset className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <legend className="px-2 text-sm font-medium text-creme">
+            {quantity > 1 ? "Nome completo de cada convidado" : "Nome completo de quem vai assistir"}
+          </legend>
+          <p className="mb-3 text-xs text-nevoa-2">
+            Um nome por ingresso. Os nomes aparecem nos ingressos emitidos pela Sympla.
+          </p>
+          <div className="grid gap-3">
+            {Array.from({ length: quantity }, (_, i) => {
+              const key = `guest-${i}` as const;
+              return (
+                <div key={i}>
+                  <label htmlFor={fieldId(key)} className="sr-only">
+                    Convidado {i + 1}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <span aria-hidden className="w-7 shrink-0 text-right font-display text-lg text-ouro">
+                      {i + 1}.
+                    </span>
+                    <input
+                      id={fieldId(key)}
+                      type="text"
+                      autoComplete={i === 0 ? "name" : "off"}
+                      maxLength={120}
+                      value={guests[i] ?? ""}
+                      onChange={(e) => {
+                        setGuest(i, e.target.value);
+                        if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+                      }}
+                      onFocus={(e) => {
+                        if (i === 0 && !guests[0]) {
+                          const buyer = formRef.current?.querySelector<HTMLInputElement>('input[name="fullName"]')?.value ?? "";
+                          if (buyer.trim()) setGuest(0, buyer.trim());
+                          e.currentTarget.select();
+                        }
+                      }}
+                      placeholder={i === 0 ? "Convidado 1 (pode ser você)" : `Convidado ${i + 1}`}
+                      aria-invalid={!!errors[key]}
+                      aria-describedby={describe(key)}
+                      className={inputClass + " border-white/15 py-3"}
+                    />
+                  </div>
+                  {errorText(key)}
+                </div>
+              );
+            })}
+          </div>
+        </fieldset>
+      )}
 
       {sheetEnabled && (
         <div>
