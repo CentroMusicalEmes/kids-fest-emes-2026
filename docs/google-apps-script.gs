@@ -106,6 +106,44 @@ function ensureHeader_(sheet, col, title, width) {
   sheet.setColumnWidth(col, width);
 }
 
+/**
+ * Rode UMA vez pelo editor: coloca o link "Ver comprovante" nos pedidos que
+ * já têm arquivo na pasta do Drive mas estão sem link na coluna L.
+ * Só preenche quando o nome no arquivo bate com o comprador da linha.
+ */
+function preencherLinksComprovantes() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
+  ensureHeader_(sheet, RECEIPT_COL, 'Comprovante', 140);
+  const files = receiptsFolder_().getFiles();
+  const porPedido = {};
+  while (files.hasNext()) {
+    const f = files.next();
+    const m = f.getName().match(/^Pedido (\d+) - (.+) - (\d{4}-\d{2}-\d{2}_\d{2}-\d{2})\.\w+$/);
+    if (!m) continue;
+    const n = parseInt(m[1], 10);
+    (porPedido[n] = porPedido[n] || []).push({ file: f, nome: m[2] });
+  }
+  const norm = function (t) { return String(t || '').replace(/^'/, '').replace(/[\\/:*?"<>|]/g, '').trim().toLowerCase(); };
+  let preenchidos = 0, ignorados = 0;
+  Object.keys(porPedido).forEach(function (n) {
+    const row = FIRST_ROW + parseInt(n, 10) - 1;
+    const nomeLinha = sheet.getRange(row, 3).getValue();
+    // entre os arquivos com esse número, o mais recente cujo nome bate com o comprador
+    const item = porPedido[n]
+      .filter(function (x) { return nomeLinha && norm(x.nome) === norm(nomeLinha); })
+      .sort(function (a, b) { return b.file.getDateCreated() - a.file.getDateCreated(); })[0];
+    if (!item) { ignorados++; return; }
+    const celula = sheet.getRange(row, RECEIPT_COL);
+    const temLink = celula.getRichTextValue() && celula.getRichTextValue().getLinkUrl();
+    if (temLink && String(celula.getDisplayValue()).indexOf('#') !== 0) return;
+    celula.setRichTextValue(
+      SpreadsheetApp.newRichTextValue().setText('Ver comprovante').setLinkUrl(item.file.getUrl()).build()
+    );
+    preenchidos++;
+  });
+  Logger.log('Links preenchidos: ' + preenchidos + ' · arquivos sem pedido correspondente: ' + ignorados);
+}
+
 /** Rode pelo editor uma vez para autorizar o acesso ao Drive e criar a pasta. */
 function prepararPastaDeComprovantes() {
   Logger.log('Pasta de comprovantes: ' + receiptsFolder_().getUrl());
