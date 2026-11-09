@@ -38,3 +38,19 @@ NEXT_PUBLIC_SALES_SHEET_TOKEN=<o mesmo token do passo 2>
 - **Se a planilha falhar,** o WhatsApp abre normalmente e a equipe continua recebendo os dados pela mensagem.
 - **O token não é senha:** ele fica visível no site. Serve só para filtrar envios aleatórios.
 - **LGPD:** compartilhe a planilha só com a equipe e apague os dados após o evento.
+
+## 5. Integração com a Sympla (ingressos emitidos entram sozinhos)
+
+A cada 15 minutos o script consulta os participantes do evento na Sympla. Para cada pedido da aba **Vendas** com o mesmo e-mail, ele marca **Ingresso emitido na Sympla? = Sim** e anota o(s) código(s) na coluna **K**. Se a pessoa pediu 3 e só 1 foi emitido, a coluna K mostra "(1 de 3)" e o status continua "Não".
+
+A API pública da Sympla só permite **consultar**: a emissão continua sendo feita no painel da Sympla, com o **mesmo e-mail** que está na planilha.
+
+1. **Token da Sympla:** na Sympla, em *Minha conta → Integrações* (ou *Configurações → API*), gere um token de acesso.
+2. No Apps Script, vá em **⚙️ Configurações do projeto → Propriedades do script → Adicionar propriedade**:
+   - `SYMPLA_TOKEN` = o token da Sympla (fica guardado aqui, fora do código)
+3. No editor, selecione a função **`listarEventosSympla`** → **Executar** → autorize → em **Registro de execução**, copie o **ID** do Kids Fest.
+4. Adicione a propriedade `SYMPLA_EVENT_ID` = esse ID.
+5. Execute **`testarSympla`**: o registro mostra quantos participantes foram lidos (não altera a planilha).
+6. Execute **`ativarSincronizacaoAutomatica`** uma única vez. Pronto: a cada 15 minutos a planilha é atualizada.
+
+Para sincronizar na hora, execute `sincronizarSympla` pelo editor.
