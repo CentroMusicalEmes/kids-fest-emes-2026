@@ -2,14 +2,13 @@ import { event } from "./event";
 import { resolveWhatsAppUrl } from "@/lib/whatsapp";
 
 /**
- * URL pública do site. Ordem: variável definida pela Emes → domínio de
- * produção que a Vercel informa no build → endereço local.
+ * URL pública do site: variável NEXT_PUBLIC_SITE_URL, se definida, ou o
+ * domínio oficial configurado na Vercel em 09/11/2026.
+ * Quando o site principal da escola ocupar o www, troque para
+ * https://kidsfest.centromusicalemes.com.br (já configurado).
  */
 export const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : "http://localhost:3000")
+  process.env.NEXT_PUBLIC_SITE_URL || "https://www.centromusicalemes.com.br"
 ).replace(/\/$/, "");
 
 /**

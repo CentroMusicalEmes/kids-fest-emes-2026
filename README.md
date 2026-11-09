@@ -190,6 +190,15 @@ Os logos aparecem em branco monocromático, para combinar com o fundo escuro.
 
 ## Deploy na Vercel
 
+**Situação atual:** o site está publicado na Vercel (time `centromusicalemes-projects`, projeto `kids-fest-emes-2026`) e responde em:
+
+- **https://www.centromusicalemes.com.br**, o endereço oficial
+- https://centromusicalemes.com.br, que redireciona para o www
+- https://kidsfest.centromusicalemes.com.br, o endereço permanente do evento
+- https://kids-fest-emes-2026.vercel.app
+
+O DNS fica na Hostinger: os registros `@` (A 216.198.79.1), `www` e `kidsfest` (CNAME para a Vercel). Quando o site principal da escola ficar pronto, aponte o `www` e o `@` para ele e troque o `siteUrl` em `config/integrations.ts` para o endereço `kidsfest`.
+
 1. Envie o projeto para o GitHub.
 2. Em [vercel.com/new](https://vercel.com/new), importe o repositório. O framework Next.js é detectado sozinho.
 3. Em **Settings → Environment Variables**, cadastre as variáveis do `.env.example`. Lembre-se de `NEXT_PUBLIC_SITE_URL` com o domínio final.
