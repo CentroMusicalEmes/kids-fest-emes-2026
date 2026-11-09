@@ -145,6 +145,8 @@ describe("payload oficial do banco", () => {
 
   it("o QR Code oficial da Emes é íntegro e é PIX", () => {
     expect(validateProvidedPixPayload(OFFICIAL_PIX_PAYLOAD)).toEqual([]);
+    const key = parseEmv(parseEmv(OFFICIAL_PIX_PAYLOAD)["26"])["01"];
+    expect(detectPixKeyType(key)).toBe("evp");
   });
 
   it("acrescenta R$ 20,00 sem alterar os demais campos", () => {
@@ -156,6 +158,7 @@ describe("payload oficial do banco", () => {
     expect(Object.fromEntries(after)["54"]).toBe("20.00");
     // campo 54 fica entre 53 (moeda) e 58 (país)
     expect(after.map(([id]) => id)).toEqual(["00", "26", "52", "53", "54", "58", "59", "60", "62"]);
+    expect(Object.fromEntries(after)["62"]).toBe("0510747QyPkNih");
   });
 
   it("substitui um valor existente", () => {
@@ -166,7 +169,7 @@ describe("payload oficial do banco", () => {
   });
 
   it("recusa payload adulterado", () => {
-    const tampered = OFFICIAL_PIX_PAYLOAD.replace("Centro", "Contra");
+    const tampered = OFFICIAL_PIX_PAYLOAD.replace("SARAIVA", "SARAIVO");
     expect(validateProvidedPixPayload(tampered)).toContain("O CRC do payload oficial não confere.");
   });
 
@@ -182,7 +185,7 @@ describe("payload oficial do banco", () => {
     });
     expect(state.status).toBe("ready");
     if (state.status === "ready") {
-      expect(state.merchantName).toBe("Centro Musical Emes");
+      expect(state.merchantName).toBe("Ezequiel Saraiva Lima");
       expect(parseEmv(state.payload)["54"]).toBe("20.00");
     }
   });
