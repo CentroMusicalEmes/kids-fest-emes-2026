@@ -27,19 +27,11 @@ import {
 
 /**
  * QR Code de recebimento enviado pela Emes em 09/11/2026.
- * Chave aleatória cd8b6fbc-aea1-49d9-b47a-cf022a91628f, titular Ezequiel
- * Saraiva Lima, sem valor fixo. (Um QR anterior, com chave malformada, foi
- * descartado porque os bancos o recusavam.)
+ * Chave PIX (e-mail): emesfinanceiro@hotmail.com — titular Centro Musical
+ * Emes, Belo Horizonte; sem valor fixo (o site acrescenta R$ 20,00).
  */
 export const OFFICIAL_PIX_PAYLOAD =
-  "00020126580014BR.GOV.BCB.PIX0136cd8b6fbc-aea1-49d9-b47a-cf022a91628f5204000053039865802BR5925EZEQUIEL SARAIVA LIMA 0706009SAO PAULO62140510747QyPkNih6304422E";
-
-/**
- * Nome do recebedor mostrado ao visitante para conferência no app do banco.
- * O campo do QR Code tem limite de 25 caracteres e veio cortado
- * ("EZEQUIEL SARAIVA LIMA 070"), então exibimos o nome do titular.
- */
-export const PIX_RECEIVER_DISPLAY_NAME = "Ezequiel Saraiva Lima";
+  "00020126480014BR.GOV.BCB.PIX0126emesfinanceiro@hotmail.com5204000053039865802BR5919Centro Musical Emes6014Belo Horizonte62070503***63047968";
 
 /**
  * Mude para true SOMENTE depois que a equipe pagar R$ 20,00 lendo o QR Code
@@ -84,10 +76,7 @@ export function resolvePixState(settings: PixSettings): PixState {
     return {
       status: "ready",
       payload: setPixPayloadAmount(settings.payload, settings.amountCents),
-      merchantName:
-        settings.payload === OFFICIAL_PIX_PAYLOAD
-          ? PIX_RECEIVER_DISPLAY_NAME
-          : getPixMerchantName(settings.payload),
+      merchantName: getPixMerchantName(settings.payload),
       amountCents: settings.amountCents,
     };
   }
