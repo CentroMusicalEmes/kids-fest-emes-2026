@@ -153,8 +153,59 @@ export interface GalleryImage {
   imageUseAuthorized: boolean;
 }
 
-/** Fotos reais da Emes. Nunca use imagens geradas por IA como registro real. */
-export const gallery: GalleryImage[] = [];
+/**
+ * Fotos reais da Emes, enviadas pela escola em 09/11/2026 (metadados
+ * removidos). Nunca use imagens geradas por IA como registro real.
+ *
+ * Só aparecem no site as fotos com `imageUseAuthorized: true`, que deve ser
+ * marcado apenas com autorização de uso de imagem dos responsáveis por todas
+ * as crianças visíveis na foto.
+ */
+// Confirmado pela Emes em 09/11/2026: autorização de uso de imagem em contrato.
+const IMAGE_USE_AUTHORIZED = true;
+
+export const gallery: GalleryImage[] = [
+  {
+    src: "/images/gallery/apresentacao-violao.jpg",
+    alt: "Menino sorrindo enquanto toca violão diante do microfone durante uma apresentação",
+    width: 1800,
+    height: 1193,
+    caption: "A alegria de tocar para quem ama",
+    imageUseAuthorized: IMAGE_USE_AUTHORIZED,
+  },
+  {
+    src: "/images/gallery/apresentacao-tambores-palco.jpg",
+    alt: "Três crianças sentadas no palco tocando tambores azuis junto com a professora",
+    width: 1800,
+    height: 1200,
+    caption: "Ritmo, palco e cumplicidade",
+    imageUseAuthorized: IMAGE_USE_AUTHORIZED,
+  },
+  {
+    src: "/images/gallery/musicalizacao-percussao.jpg",
+    alt: "Menino de óculos tocando tambor e segurando um chocalho, com colegas ao fundo",
+    width: 1800,
+    height: 1395,
+    caption: "Concentração de pequeno artista",
+    imageUseAuthorized: IMAGE_USE_AUTHORIZED,
+  },
+  {
+    src: "/images/gallery/apresentacao-flauta-teclado.jpg",
+    alt: "Jovem tocando flauta transversal ao microfone, ao lado de um menino ao teclado",
+    width: 1800,
+    height: 1193,
+    caption: "Cada nota, uma conquista",
+    imageUseAuthorized: IMAGE_USE_AUTHORIZED,
+  },
+  {
+    src: "/images/gallery/aula-musicalizacao-bebe.jpg",
+    alt: "Professora tocando violão e cantando para uma bebê na sala de musicalização",
+    width: 1350,
+    height: 1800,
+    caption: "Onde a música começa",
+    imageUseAuthorized: IMAGE_USE_AUTHORIZED,
+  },
+];
 
 /* -------------------------------------------------------------------------- */
 /* Patrocinadores                                                             */
