@@ -16,7 +16,7 @@ O site foi pensado como a divulgação de uma estreia teatral, com cortinas, hol
 3. [Estrutura](#estrutura)
 4. [O que editar e onde](#o-que-editar-e-onde)
 5. [Ativar o PIX](#ativar-o-pix)
-6. [Validar o WhatsApp](#validar-o-whatsapp)
+6. [WhatsApp](#whatsapp)
 7. [Meta Pixel](#meta-pixel)
 8. [Fotos, logos e patrocinadores](#fotos-logos-e-patrocinadores)
 9. [Deploy na Vercel](#deploy-na-vercel)
@@ -129,15 +129,14 @@ Observações:
 - A chave PIX é pública por natureza. **Nunca** coloque tokens de bancos ou de provedores de pagamento em variáveis `NEXT_PUBLIC_*`.
 - O site **não confirma compras**. A confirmação acontece quando a equipe confere o comprovante.
 
-## Validar o WhatsApp
+## WhatsApp
 
-O número informado, **(31) 2555-3273**, tem formato de telefone fixo. Ele pode estar no WhatsApp Business, mas isso precisa ser testado.
+O número **(31) 2555-3273** foi testado pela equipe da Emes e recebe mensagens no WhatsApp (confirmado em 09/11/2026). Por isso, os botões “Enviar comprovante”, “Chamar no WhatsApp agora” e o botão flutuante já ficam ativos, sem precisar de variável.
 
-1. Abra `https://wa.me/553125553273` em um celular e envie uma mensagem de teste.
-2. Se a mensagem chegar, defina `NEXT_PUBLIC_WHATSAPP_VALIDATED=true`.
-3. Para usar outro número: `NEXT_PUBLIC_WHATSAPP_NUMBER=55DDDNUMERO`, só dígitos.
+- Para trocar de número: `NEXT_PUBLIC_WHATSAPP_NUMBER=55DDDNUMERO`, só dígitos. Teste antes em `https://wa.me/55DDDNUMERO`.
+- Para desativar os links, por exemplo se o número deixar de funcionar: `NEXT_PUBLIC_WHATSAPP_VALIDATED=false`. Os botões passam a mostrar “Canal de WhatsApp em validação” e o telefone como alternativa.
 
-Enquanto o número não for validado, os botões de WhatsApp aparecem desativados com o texto “Canal de WhatsApp em validação” e o telefone como alternativa. O botão flutuante fica oculto. As mensagens pré-preenchidas ficam em `config/integrations.ts`.
+As mensagens pré-preenchidas ficam em `config/integrations.ts`.
 
 ## Meta Pixel
 
@@ -198,7 +197,7 @@ Outras hospedagens compatíveis com Next.js também funcionam com `npm run build
 ## Checklist antes de divulgar
 
 - [ ] PIX de teste feito e `NEXT_PUBLIC_PIX_VALIDATED=true`
-- [ ] WhatsApp testado e `NEXT_PUBLIC_WHATSAPP_VALIDATED=true`
+- [x] WhatsApp testado (09/11/2026)
 - [ ] Endereço do teatro reconfirmado
 - [ ] `NEXT_PUBLIC_SITE_URL` com o domínio final
 - [ ] Fotos reais com autorização de uso de imagem

@@ -1,20 +1,30 @@
 import { event } from "./event";
 import { resolveWhatsAppUrl } from "@/lib/whatsapp";
 
+/**
+ * URL pública do site. Ordem: variável definida pela Emes → domínio de
+ * produção que a Vercel informa no build → endereço local.
+ */
 export const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : "http://localhost:3000")
 ).replace(/\/$/, "");
 
 /**
  * WhatsApp.
  *
- * O número informado pela Emes, (31) 2555-3273, tem formato de telefone fixo.
- * Ele pode funcionar com WhatsApp Business, mas isso precisa ser testado.
- * Os links só são ativados com NEXT_PUBLIC_WHATSAPP_VALIDATED=true.
+ * O número da Emes, (31) 2555-3273, foi testado pela equipe e recebe
+ * mensagens no WhatsApp (confirmado em 09/11/2026), por isso os links ficam
+ * ativos por padrão.
+ *
+ * Para trocar de número: NEXT_PUBLIC_WHATSAPP_NUMBER=55DDDNUMERO.
+ * Para desativar os links: NEXT_PUBLIC_WHATSAPP_VALIDATED=false.
  */
 export const whatsappConfig = {
   number: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "553125553273",
-  validated: process.env.NEXT_PUBLIC_WHATSAPP_VALIDATED === "true",
+  validated: process.env.NEXT_PUBLIC_WHATSAPP_VALIDATED !== "false",
 };
 
 export const whatsappMessages = {
