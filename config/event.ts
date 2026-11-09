@@ -118,7 +118,7 @@ export const faq: FaqItem[] = [
   {
     question: "Como confirmo o pagamento?",
     answer:
-      "Na área de ingressos, preencha seu nome completo, e-mail e o nome do aluno(a) e envie o comprovante pelo WhatsApp. Após a conferência da equipe da Emes, você recebe o ingresso pela Sympla no e-mail informado.",
+      "Na área de ingressos, preencha seu nome completo, e-mail e o nome do aluno(a) e anexe o comprovante do PIX (obrigatório). Após a conferência da equipe da Emes, você recebe o ingresso pela Sympla no e-mail informado.",
   },
   {
     question: "Quem pode assistir?",

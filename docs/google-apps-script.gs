@@ -9,6 +9,13 @@ const SHEET_NAME = 'Vendas';
 const FIRST_ROW = 5; // primeira linha de dados (a linha 4 é o cabeçalho)
 const TOKEN = 'TROQUE-ESTE-TOKEN'; // mesmo valor de NEXT_PUBLIC_SALES_SHEET_TOKEN no site
 const SYMPLA_COL = 11; // coluna K: código(s) dos ingressos emitidos na Sympla
+const RECEIPT_COL = 12; // coluna L: link do comprovante no Google Drive
+const RECEIPTS_FOLDER = 'Kids Fest 2026 - Comprovantes';
+const RECEIPT_MAX_BYTES = 10 * 1024 * 1024;
+const RECEIPT_TYPES = {
+  'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+  'image/heic': 'heic', 'image/heif': 'heif', 'application/pdf': 'pdf',
+};
 
 function doPost(e) {
   const lock = LockService.getScriptLock();
@@ -25,6 +32,13 @@ function doPost(e) {
       return json_({ ok: false, error: 'dados' });
     }
 
+    // Comprovante obrigatório
+    const receipt = data.receipt || {};
+    const ext = RECEIPT_TYPES[receipt.type];
+    if (!ext || !receipt.base64) return json_({ ok: false, error: 'comprovante' });
+    const bytes = Utilities.base64Decode(receipt.base64);
+    if (!bytes.length || bytes.length > RECEIPT_MAX_BYTES) return json_({ ok: false, error: 'comprovante' });
+
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
     const lastRow = sheet.getMaxRows();
     const names = sheet.getRange(FIRST_ROW, 3, lastRow - FIRST_ROW + 1, 1).getValues();
@@ -35,17 +49,51 @@ function doPost(e) {
     }
     const row = FIRST_ROW + index;
 
-    // B: data/hora · C: nome · D: e-mail · E: aluno(a) · F: quantidade
+    // 1) Salva o comprovante no Drive (se falhar, nada é gravado na planilha)
+    const stamp = Utilities.formatDate(new Date(), 'America/Sao_Paulo', 'yyyy-MM-dd_HH-mm');
+    const fileName = ('Pedido ' + (row - FIRST_ROW + 1) + ' - ' + fullName.replace(/^'/, '') + ' - ' + stamp + '.' + ext)
+      .replace(/[\\/:*?"<>|]/g, '');
+    const file = receiptsFolder_().createFile(Utilities.newBlob(bytes, receipt.type, fileName));
+
+    // 2) Grava o pedido. B: data/hora · C: nome · D: e-mail · E: aluno(a) · F: quantidade
     sheet.getRange(row, 2, 1, 5).setValues([[new Date(), fullName, email, studentName, quantity]]);
     // H: pagamento conferido? · I: ingresso emitido na Sympla?
     sheet.getRange(row, 8, 1, 2).setValues([['Não', 'Não']]);
+    // L: link do comprovante
+    ensureHeader_(sheet, RECEIPT_COL, 'Comprovante', 140);
+    sheet.getRange(row, RECEIPT_COL).setFormula('=HYPERLINK("' + file.getUrl() + '","Ver comprovante")');
 
-    return json_({ ok: true, row: row });
+    return json_({ ok: true, row: row, receiptUrl: file.getUrl() });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   } finally {
     lock.releaseLock();
   }
+}
+
+/** Pasta do Drive onde os comprovantes ficam guardados (criada na 1ª vez). */
+function receiptsFolder_() {
+  const props = PropertiesService.getScriptProperties();
+  const id = props.getProperty('RECEIPTS_FOLDER_ID');
+  if (id) {
+    try { return DriveApp.getFolderById(id); } catch (e) { /* recria abaixo */ }
+  }
+  const folder = DriveApp.createFolder(RECEIPTS_FOLDER);
+  props.setProperty('RECEIPTS_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function ensureHeader_(sheet, col, title, width) {
+  if (sheet.getRange(4, col).getValue()) return;
+  sheet.getRange(4, col).setValue(title)
+    .setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#30145C')
+    .setHorizontalAlignment('center').setWrap(true);
+  sheet.setColumnWidth(col, width);
+}
+
+/** Rode pelo editor uma vez para autorizar o acesso ao Drive e criar a pasta. */
+function prepararPastaDeComprovantes() {
+  Logger.log('Pasta de comprovantes: ' + receiptsFolder_().getUrl());
 }
 
 /** Remove quebras de linha, limita o tamanho e impede fórmulas maliciosas. */
@@ -178,12 +226,7 @@ function sincronizarSympla() {
     });
 
     const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME);
-    if (!sheet.getRange(4, SYMPLA_COL).getValue()) {
-      sheet.getRange(4, SYMPLA_COL).setValue('Código(s) Sympla')
-        .setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#30145C')
-        .setHorizontalAlignment('center').setWrap(true);
-      sheet.setColumnWidth(SYMPLA_COL, 220);
-    }
+    ensureHeader_(sheet, SYMPLA_COL, 'Código(s) Sympla', 220);
 
     const n = sheet.getMaxRows() - FIRST_ROW + 1;
     const dados = sheet.getRange(FIRST_ROW, 1, n, SYMPLA_COL).getValues();
@@ -230,6 +273,8 @@ function ativarSincronizacaoAutomatica() {
 function testarGravacao() {
   const res = doPost({ postData: { contents: JSON.stringify({
     token: TOKEN, fullName: 'Teste da Silva', email: 'teste@exemplo.com', studentName: 'Aluno Teste', quantity: 1,
+    receipt: { name: 'teste.png', type: 'image/png',
+      base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==' },
   }) } });
   Logger.log(res.getContent());
 }

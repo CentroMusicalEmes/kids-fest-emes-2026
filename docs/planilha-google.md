@@ -39,6 +39,12 @@ NEXT_PUBLIC_SALES_SHEET_TOKEN=<o mesmo token do passo 2>
 - **O token não é senha:** ele fica visível no site. Serve só para filtrar envios aleatórios.
 - **LGPD:** compartilhe a planilha só com a equipe e apague os dados após o evento.
 
+## Comprovante obrigatório
+
+O formulário do site exige o comprovante do PIX (foto, print ou PDF, até 8 MB). O script salva o arquivo na pasta **"Kids Fest 2026 - Comprovantes"** do Google Drive da conta dona do script e coloca o link **"Ver comprovante"** na coluna **L** da aba Vendas. Se o Drive falhar, nada é gravado e o site oferece o WhatsApp como reserva.
+
+Depois de colar o código, rode `prepararPastaDeComprovantes` uma vez pelo editor, para autorizar o acesso ao Drive, e publique uma **nova versão**. Para a equipe abrir os comprovantes, compartilhe a pasta com quem confere os pagamentos.
+
 ## 5. Integração com a Sympla (ingressos emitidos entram sozinhos)
 
 A cada 15 minutos o script consulta os participantes do evento na Sympla. Para cada pedido da aba **Vendas** com o mesmo e-mail, ele marca **Ingresso emitido na Sympla? = Sim** e anota o(s) código(s) na coluna **K**. Se a pessoa pediu 3 e só 1 foi emitido, a coluna K mostra "(1 de 3)" e o status continua "Não".

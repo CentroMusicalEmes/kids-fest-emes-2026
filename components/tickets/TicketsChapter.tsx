@@ -61,8 +61,9 @@ export function TicketsChapter() {
               Já realizou o pagamento?
             </h3>
             <p className="mx-auto mt-3 max-w-xl text-lg text-nevoa">
-              Envie seu comprovante para a equipe da Emes e aguarde a confirmação do seu ingresso.
-              Preencha seus dados para receber o ingresso pela <strong className="text-creme">Sympla</strong>.
+              Preencha seus dados e <strong className="text-creme">anexe o comprovante do PIX</strong>. Após
+              a conferência da equipe da Emes, você recebe o ingresso pela{" "}
+              <strong className="text-creme">Sympla</strong>.
             </p>
             <TicketRequestForm />
           </div>
